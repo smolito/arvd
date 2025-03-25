@@ -10,17 +10,19 @@ if (nrow(nas) == 0){
   message("no rows contain NA values")
 }
 
+colnames(data_vino)
+
+# all attributes numerical, no missing values
 summary(data_vino)
 
-# GOAL IS TO FIND ATRIBUTES WITH THE MOST FOOLPROOF TRENDS
+data_vino_norm = imap_dfr(data_vino, \(x, idx){
+  if(idx != "quality"){
+    x = (x - min(x)) / (max(x) - min(x))
+  }
+  return(x)
+})
 
-# SULFUR MŮŽE KORELOVAT S QUALITY, UMĚLE SE DODÁVÁ
-
-# all atributes numerical, no missing values
-
-boxplot(data_vino$fixed.acidity) # kinda sus
-
-colnames(data_vino)
+# TODO: pokračovat vizualizacemi závislostí proměnných na kvalitě představuju si pomocí pairs
 
 # acidities seem to trend w density
 
