@@ -6,7 +6,8 @@ with(iris[iris$Species=='virginica', ], plot(Petal.Length ~ jitter(Sepal.Length)
 
 # uprava mezi (aby byl videt pocatek souradne soustavy):
 with(iris[iris$Species=='virginica', ], plot(Petal.Length ~ jitter(Sepal.Length),
-                                             xlim = c(0, max(Sepal.Length)), ylim = c(0, max(Petal.Length))))
+                                             xlim = c(0, max(Sepal.Length)),
+                                             ylim = c(0, max(Petal.Length))))
 
 # regresni model:
 m <- lm(Petal.Length ~ Sepal.Length, iris[iris$Species=='virginica', ])
@@ -42,8 +43,7 @@ m <- lm(Petal.Length ~ Sepal.Length, d)
 summary(m)
 
 # a vykreslime nalezeny model
-abline(coef(m),col='red')
-
+abline(coef(m), col='red')
 
 ################
 # INSURANCE DATA
