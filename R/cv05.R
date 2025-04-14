@@ -6,7 +6,7 @@ summary(d)
 # naivni Bayes
 library(e1071)
 # je treba zkonvertovat "logical" priznak na "numeric" 
-#d$windy <- as.numeric(d$windy)
+# d$windy <- as.numeric(d$windy)
 # vyytvoreni modelu = vypocet pravdepodobosti
 d$play <- factor(d$play)
 summary(d)
@@ -66,3 +66,4 @@ trainFull <- rbind(trainIris, validIris)
 prediction <- knn(trainFull[,-5],testIris[,-5],cl = trainFull[,5],k = kValidated)
 testAcc <- sum(prediction == testIris[,5])/nrow(testIris)
 testAcc
+
