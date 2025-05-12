@@ -2,7 +2,7 @@ library(tidyverse)
 library(dendextend)
 library(ggplot2)
 
-data_raw = read.csv("data-input/uB/ukol_B_cirhoza.csv")
+data_raw <- read.csv("data-input/uB/ukol_B_cirhoza.csv")
 
 summary(data_raw)
 
@@ -15,8 +15,8 @@ data_fill_nas = data_raw %>%
   mutate(Albumin_and_Globulin_Ratio = if_else(
     is.na(Albumin_and_Globulin_Ratio),
     mean(Albumin_and_Globulin_Ratio, na.rm = TRUE),
-    Albumin_and_Globulin_Ratio)
-    )
+    Albumin_and_Globulin_Ratio
+  ))
 
 summary(data_fill_nas)
 
@@ -25,6 +25,9 @@ summary(data_fill_nas)
 # ward method ~ "ward.D2" implements that criterion (Murtagh and Legendre 2014).
 # With the latter, the dissimilarities are squared before cluster updating."
 # from rdocumentation
+
+data_norm <- data_fill_nas %>%
+  mutate(across(where(is.numeric), ~ (. - min(.)) / (max(.) - min(.))))
 
 dend = data_fill_nas %>% # data
   select(-c(Dataset)) %>% 
