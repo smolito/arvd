@@ -1,7 +1,7 @@
 library(tidyverse)
 library(caret)
 
-# Načtení a úprava dat
+# načtení a úprava dat
 diabetes_data <- read.csv("data-input/uC/data_C_diabetes_indiani.csv") %>% 
   mutate(test = as.factor(test))
 
@@ -12,18 +12,18 @@ summary(diabetes_data)
 dia.pca <- prcomp(diabetes_data[, 1:8], center = TRUE, scale. = TRUE)
 summary(dia.pca)
 
-# Rozdělení na trénovací a testovací množinu
+# rozdělení na trénovací a testovací množinu
 set.seed(123456)
 train_idx <- createDataPartition(diabetes_data$test, p = 0.8, list = FALSE)
 train_data <- diabetes_data[train_idx, ]
 test_data <- diabetes_data[-train_idx, ]
 
-# Normalizace (min-max škálování)
+# normalizace (min-max škálování)
 preproc <- preProcess(train_data, method = c("range"))
 train_scaled <- predict(preproc, train_data)
 test_scaled <- predict(preproc, test_data)
 
-# Nastavení kontrol pro trénování modelu
+# nastavení kontrol pro trénování modelu
 ctrl <- trainControl(
   method = "cv",
   number = 5,
@@ -32,8 +32,8 @@ ctrl <- trainControl(
   sampling = "up"
 )
 
-# Trénování SVM
-set.seed(123)
+# trénování SVM
+set.seed(753)
 svm_model <- train(
   test ~ ., 
   data = train_scaled,
@@ -44,9 +44,9 @@ svm_model <- train(
   tuneLength = 10
 )
 
-# Trénování k-NN
+# trénování k-NN
 knn_grid <- expand.grid(k = seq(3, 15, by = 2))
-set.seed(123)
+set.seed(753)
 knn_model <- train(
   test ~ ., 
   data = train_scaled,
@@ -57,15 +57,17 @@ knn_model <- train(
   tuneGrid = knn_grid
 )
 
-# Vyhodnocení SVM
+test_actual <- relevel(factor(test_scaled$test), ref = "positif")
+
+# SVM
 svm_pred <- predict(svm_model, newdata = test_scaled)
-svm_pred <- factor(svm_pred, levels = levels(train_scaled$test))
-test_actual <- factor(test_scaled$test, levels = levels(train_scaled$test))
+svm_pred <- factor(svm_pred, levels = levels(test_actual))
+
 print(confusionMatrix(svm_pred, test_actual))
 
-# Vyhodnocení k-NN
+# k-NN
 knn_pred <- predict(knn_model, newdata = test_scaled)
-knn_pred <- factor(knn_pred, levels = levels(train_scaled$test))
+knn_pred <- factor(knn_pred, levels = levels(test_actual))
 print(confusionMatrix(knn_pred, test_actual))
 
 # vizualizace ----
@@ -74,7 +76,7 @@ library(ggplot2)
 library(pROC)
 library(reshape2)
 
-# Confusion matrix jako heatmapa
+# confusion matrix
 plot_confusion_matrix <- function(cm, title) {
   cm_df <- as.data.frame(cm$table)
   colnames(cm_df) <- c("Actual", "Predicted", "Freq")
@@ -87,22 +89,21 @@ plot_confusion_matrix <- function(cm, title) {
     theme_minimal()
 }
 
-# Confusion matrices
 cm_svm <- confusionMatrix(svm_pred, test_actual)
 cm_knn <- confusionMatrix(knn_pred, test_actual)
 
-# Zobrazit heatmapy
-plot_confusion_matrix(cm_svm, "Confusion Matrix - SVM")
-plot_confusion_matrix(cm_knn, "Confusion Matrix - k-NN")
+# heatmap
+plot_confusion_matrix(cm_svm, "Tabulka SVM")
+plot_confusion_matrix(cm_knn, "Tabulka k-NN")
 
-# ROC křivky
+# ROC
 svm_probs <- predict(svm_model, newdata = test_scaled, type = "prob")
 knn_probs <- predict(knn_model, newdata = test_scaled, type = "prob")
 
 roc_svm <- roc(test_actual, svm_probs$negatif)
 roc_knn <- roc(test_actual, knn_probs$negatif)
 
-# Plot ROC křivek
+# Plot ROC
 plot(roc_svm, col = "blue", legacy.axes = TRUE, main = "ROC křivky SVM vs k-NN")
 plot(roc_knn, col = "red", add = TRUE)
 legend("bottomright", legend = c("SVM", "k-NN"), col = c("blue", "red"), lwd = 2)
